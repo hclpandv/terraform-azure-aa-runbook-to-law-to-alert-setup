@@ -38,6 +38,9 @@ jobs:
 
     - name: TF Plan
       run: terraform plan # terraform apply --auto-approve
+
+    - name: TF Deploy
+      run: terraform apply --auto-approve
   
   # apply:
   #   runs-on: ubuntu-latest
