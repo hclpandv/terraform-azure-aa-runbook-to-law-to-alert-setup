@@ -7,7 +7,7 @@ permissions:
 on:
   push:
     branches:
-    - main
+    - terraform-flow
 env: 
   LOCATION: "westeurope"
   RESOURCE_GROUP_NAME: "WIF-AppReg-Federation"
