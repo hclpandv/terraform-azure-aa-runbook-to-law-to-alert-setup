@@ -1,0 +1,32 @@
+name: terraform - Workload identity federation workflow
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+on:
+  push:
+    branches:
+    - terraform-flow
+env: 
+  ARM_USE_OIDC: "true" # Using Workload identity via federated credential
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_USE_AZUREAD: "true"
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: Azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        
+    - name: TF Init
+      run: terraform init
+
+    - name: TF Plan
+      run: terraform plan # terraform apply --auto-approve
