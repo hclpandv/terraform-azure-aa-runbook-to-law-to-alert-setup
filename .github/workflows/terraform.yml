@@ -24,9 +24,21 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
+
     - name: TF Init
       run: terraform init
 
     - name: TF Plan
       run: terraform plan # terraform apply --auto-approve
+  
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: Azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        
+    - name: TF apply
+      run: terraform apply --auto-approve
