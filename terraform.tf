@@ -4,6 +4,10 @@ terraform {
     azurerm = {
       source = "hashicorp/azurerm"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 1.8.0"
+    }
   }
   backend "azurerm" {
     resource_group_name  = "TerraformStateRG"

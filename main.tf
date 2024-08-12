@@ -31,9 +31,9 @@ module "automation_account_01" {
       content_uri     = "https://files.pythonhosted.org/packages/20/f0/e5404eb87d20a6937a6672b070f820b5b6e81050723eea8494b04e3699df/azure_keyvault_certificates-4.8.0-py3-none-any.whl"
       content_version = "4.8.0"
     }
-    azure_communication_email = {
-      content_uri     = "https://files.pythonhosted.org/packages/43/6e/0d73cadbcc572db66284fea3ca6a84caf5799740bdb54454175e68fc65a4/azure_communication_email-1.0.0-py3-none-any.whl"
-      content_version = "1.0.0"
+    azure-monitor-ingestion = {
+      content_uri     = "https://files.pythonhosted.org/packages/bf/ba/f6dee9ef082e164e8c5d239ffabb13580bac3061b9096f0f4af1b6a7929e/azure_monitor_ingestion-1.0.4-py3-none-any.whl"
+      content_version = "1.0.4"
     }
   }
   system_assigned_identity_enabled       = true
@@ -67,6 +67,45 @@ resource "azurerm_log_analytics_workspace" "law_01" {
   #retention_in_days   = 10
 }
 
+resource "azapi_resource" "data_collection_logs_table" {
+  name      = "CertificateExpiring_CL"
+  parent_id = azurerm_log_analytics_workspace.law_01.id
+  type      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  body = jsonencode(
+    {
+      "properties" : {
+        "schema" : {
+          "name" : "CertificateExpiring_CL",
+          "columns" : [
+            {
+              "name" : "TimeGenerated",
+              "type" : "datetime",
+              "description" : "The time at which the data was generated"
+            },
+            {
+              "name" = "ExpiryDetails"
+              "type" = "string"
+              "description" : "Expiry details"
+            },
+            {
+              "name" : "ExpiringCertificates",
+              "type" : "string",
+              "description" : "ExpiringCertificates"
+            },
+            {
+              "name" : "Severitylevel",
+              "type" : "string",
+              "description" : "Severitylevel"
+            }
+          ]
+        },
+        "retentionInDays" : 30,
+        "totalRetentionInDays" : 30
+      }
+    }
+  )
+}
+
 #------------------------------------------------------------------
 # Deploy DCR, DCE and alert on an existing log analytics workspace
 #------------------------------------------------------------------
@@ -77,7 +116,7 @@ resource "azurerm_monitor_data_collection_endpoint" "instance_01" {
   description         = "Data collection endpoint for ingesting custom logs from python script"
 }
 
-resource "azurerm_monitor_data_collection_rule" "example" {
+resource "azurerm_monitor_data_collection_rule" "instance_01" {
   name                        = "aa-we-vikitest-1-dcr"
   resource_group_name         = azurerm_resource_group.rg_1.name
   location                    = azurerm_resource_group.rg_1.location
@@ -91,14 +130,14 @@ resource "azurerm_monitor_data_collection_rule" "example" {
   }
   
   data_flow {
-    streams       = ["Custom-CertificateExpiring_CL"]
+    streams       = ["Custom-${azapi_resource.data_collection_logs_table.name}"]
     destinations  = ["aa-runbook-custom-log"]
-    output_stream = "Microsoft-Syslog"
+    output_stream = "Custom-${azapi_resource.data_collection_logs_table.name}"
     transform_kql = "source"
   }
 
   stream_declaration {
-    stream_name = "Custom-CertificateExpiring_CL"
+    stream_name = "Custom-${azapi_resource.data_collection_logs_table.name}"
     column {
       name = "TimeGenerated"
       type = "datetime"
