@@ -59,7 +59,10 @@ module "automation_account_01" {
 #---------------------------------------
 # Log analytics workspace
 #---------------------------------------
-# data azurerm
+# data "azurerm_log_analytics_workspace" "law_01" {
+#   name                = "lawtest-03"
+#   resource_group_name = "rg-empsecure-landingzone-weu-01"
+# }
 
 #------------------------------------------------------------------
 # Deploy DCR, DCE and alert on an existing log analytics workspace
