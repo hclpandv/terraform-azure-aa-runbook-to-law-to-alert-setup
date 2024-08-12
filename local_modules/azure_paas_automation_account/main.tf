@@ -138,4 +138,5 @@ resource "azurerm_automation_job_schedule" "runbook_schedules" {
   schedule_name           = lookup(local.schedules, lower(each.value.schedule_frequency), null)
   runbook_name            = each.key
 
+  depends_on = [ azurerm_automation_runbook.runbooks ]
 }

@@ -59,11 +59,71 @@ module "automation_account_01" {
 #---------------------------------------
 # Log analytics workspace
 #---------------------------------------
-# data "azurerm_log_analytics_workspace" "law_01" {
-#   name                = "lawtest-03"
-#   resource_group_name = "rg-empsecure-landingzone-weu-01"
-# }
+resource "azurerm_log_analytics_workspace" "law_01" {
+  name                = "law-we-monitor-01"
+  location            = azurerm_resource_group.rg_1.location
+  resource_group_name = azurerm_resource_group.rg_1.name
+  sku                 = "PerGB2018"
+  #retention_in_days   = 10
+}
 
 #------------------------------------------------------------------
 # Deploy DCR, DCE and alert on an existing log analytics workspace
 #------------------------------------------------------------------
+resource "azurerm_monitor_data_collection_endpoint" "instance_01" {
+  name                = "aa-we-vikitest-1-dce"
+  location            = azurerm_resource_group.rg_1.location
+  resource_group_name = azurerm_resource_group.rg_1.name
+  description         = "Data collection endpoint for ingesting custom logs from python script"
+}
+
+resource "azurerm_monitor_data_collection_rule" "example" {
+  name                        = "aa-we-vikitest-1-dcr"
+  resource_group_name         = azurerm_resource_group.rg_1.name
+  location                    = azurerm_resource_group.rg_1.location
+  data_collection_endpoint_id = azurerm_monitor_data_collection_endpoint.instance_01.id
+
+  destinations {
+    log_analytics {
+      workspace_resource_id = azurerm_log_analytics_workspace.law_01.id
+      name                  = "aa-runbook-custom-log"
+    }
+  }
+  
+  data_flow {
+    streams       = ["Custom-CertificateExpiring_CL"]
+    destinations  = ["aa-runbook-custom-log"]
+    output_stream = "Microsoft-Syslog"
+    transform_kql = "source"
+  }
+
+  stream_declaration {
+    stream_name = "Custom-CertificateExpiring_CL"
+    column {
+      name = "TimeGenerated"
+      type = "datetime"
+    }
+    column {
+      name = "ExpiryDetails"
+      type = "string"
+    }
+    column {
+      name = "ExpiringCertificates"
+      type = "string"
+    }
+    column {
+      name = "Severitylevel"
+      type = "string"
+    }
+  }
+
+  identity {
+    type         = "SystemAssigned"
+    # identity_ids = [azurerm_user_assigned_identity.example.id]
+  }
+
+  description = "data collection rule example"
+  tags = {
+    foo = "bar"
+  }
+}
