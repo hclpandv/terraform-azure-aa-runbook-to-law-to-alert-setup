@@ -55,3 +55,12 @@ module "automation_account_01" {
     deployment_method = "github-actions"
   }
 }
+
+#---------------------------------------
+# Log analytics workspace
+#---------------------------------------
+# data azurerm
+
+#------------------------------------------------------------------
+# Deploy DCR, DCE and alert on an existing log analytics workspace
+#------------------------------------------------------------------
