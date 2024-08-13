@@ -84,11 +84,19 @@ resource "azurerm_automation_python3_package" "packages" {
   for_each = var.python3_shared_packages
 
   name                    = each.key
-  resource_group_name     = var.automation_account_resource_group_name
+  resource_group_name     = azurerm_automation_account.instance.resource_group_name
   automation_account_name = azurerm_automation_account.instance.name
   content_uri             = each.value.content_uri
   content_version         = each.value.content_version
   tags                    = var.automation_account_tags
+
+  depends_on = [ 
+    azurerm_automation_account.instance
+  ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Runbooks

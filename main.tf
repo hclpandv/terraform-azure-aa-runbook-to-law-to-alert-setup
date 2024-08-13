@@ -166,3 +166,18 @@ resource "azurerm_monitor_data_collection_rule" "instance_01" {
     foo = "bar"
   }
 }
+
+#------------------------------------------------------------------
+# action group and alert in azure monitor
+#------------------------------------------------------------------
+resource "azurerm_monitor_action_group" "example" {
+  name                = "CriticalAlertsAction"
+  resource_group_name = azurerm_resource_group.rg_1.name
+  short_name          = "p0action"
+
+  email_receiver {
+    name                    = "sendtome"
+    email_address           = "vikiscripts@gmail.com"
+    use_common_alert_schema = true
+  }
+}
